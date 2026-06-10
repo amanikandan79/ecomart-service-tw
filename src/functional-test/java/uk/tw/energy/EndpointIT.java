@@ -1,4 +1,4 @@
-package java.uk.tw.energy;
+package uk.tw.energy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +22,7 @@ import uk.tw.energy.domain.MeterReadings;
 import java.util.Collections;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = App.class)
-public class EndpointTest {
+public class EndpointIT {
 
     private static final String KNOWN_SMART_METER_ID = "smart-meter-0";
 
