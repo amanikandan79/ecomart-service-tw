@@ -37,12 +37,41 @@ These values are used in the code and in the following examples too.
 
 ## Requirements
 
-The project requires [Java 18](https://adoptium.net/en-GB/temurin/releases/?version=18) or
-higher.
+The project requires [Java 18](https://adoptium.net/en-GB/temurin/releases/?version=18) or higher.
 
 The project makes use of Gradle and uses
 the [Gradle wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html), which means you don't need Gradle
 installed.
+
+## Deployment & Security Assumptions
+
+**IMPORTANT**: This API is designed to run within a protected network or behind an API gateway with authentication/authorization already handled upstream.
+
+### Security Model
+- **No built-in authentication/authorization**: The API assumes all requests are pre-validated by an upstream gateway or load balancer.
+- **No encryption in transit enforcement**: TLS should be enforced at the load balancer or API gateway level.
+- **Input validation**: All request payloads are validated using Spring Bean Validation (`@NotBlank`, `@NotEmpty`, `@Positive`, `@Size`).
+- **Data at rest**: Smart meter data is stored in-memory; use an external persistence layer (database) for production multi-instance deployments.
+
+### Deployment Context
+- **Single-instance deployment**: Current in-memory data store (`ConcurrentHashMap` + synchronized lists) is thread-safe but not distributed.
+- **Multi-instance deployment**: Requires external data persistence (PostgreSQL, Redis, etc.) and distributed cache invalidation.
+- **Load balancing**: If deployed behind a load balancer, session affinity is NOT required; all instances are stateless (except in-memory data).
+
+### Known Limitations (In-Memory Store)
+- Data loss on application restart
+- Not suitable for high-traffic scenarios without optimization
+- Bounded to 1000 readings per meter (see `MeterReadingService.MAX_READINGS_PER_METER`)
+
+### Production Readiness Checklist
+- [ ] Deploy behind API gateway with authentication/authorization
+- [ ] Enable TLS at load balancer or gateway
+- [ ] Configure external data persistence for multi-instance deployments
+- [ ] Enable structured logging (SLF4J with centralized log aggregation)
+- [ ] Configure metrics export (Micrometer to CloudWatch/Prometheus)
+- [ ] Set up health checks and readiness probes
+- [ ] Review concurrency test results under expected load
+- [ ] Document security assumptions in deployment runbook
 
 ## Useful Gradle commands
 
@@ -101,6 +130,16 @@ Run the application which will be listening on port `8080`.
 ```console
 $ ./gradlew bootRun
 ```
+
+### Run Jenkins for CI/CD
+
+Start the local Jenkins controller from the main compose file:
+
+```console
+$ docker compose up -d
+```
+
+Open `http://localhost:8082`, then create a Multibranch Pipeline or Pipeline job that points to this repository. Jenkins will pick up the root `Jenkinsfile` and run the Gradle build/test/archive flow automatically.
 
 ## API
 

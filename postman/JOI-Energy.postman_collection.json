@@ -1,0 +1,164 @@
+{
+  "info": {
+    "_postman_id": "c1e87b1d-7b0d-4bc4-a1f7-2dd7f4e4b001",
+    "name": "JOI Energy API",
+    "description": "Postman collection generated from README.md for JOI Energy API testing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Readings",
+      "item": [
+        {
+          "name": "Store Readings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"smartMeterId\": \"{{smartMeterId}}\",\n  \"electricityReadings\": [\n    {\n      \"time\": 1606636800,\n      \"reading\": 0.0503\n    },\n    {\n      \"time\": 1606636860,\n      \"reading\": 0.0621\n    },\n    {\n      \"time\": 1606636920,\n      \"reading\": 0.0222\n    },\n    {\n      \"time\": 1606636980,\n      \"reading\": 0.0423\n    },\n    {\n      \"time\": 1606637040,\n      \"reading\": 0.0191\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readings/store",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "readings",
+                "store"
+              ]
+            },
+            "description": "Store a batch of meter readings as shown in README.md."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Stored Readings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/readings/read/{{smartMeterId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "readings",
+                "read",
+                "{{smartMeterId}}"
+              ]
+            },
+            "description": "Retrieve stored readings for a smart meter."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "pm.expect(pm.response.json()).to.be.an('array');",
+                  "pm.expect(pm.response.json().length).to.be.greaterThan(0);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Price Plans",
+      "item": [
+        {
+          "name": "Compare All Price Plans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/price-plans/compare-all/{{smartMeterId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "price-plans",
+                "compare-all",
+                "{{smartMeterId}}"
+              ]
+            },
+            "description": "Compare usage cost against all price plans."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.have.property('pricePlanId');",
+                  "pm.expect(json).to.have.property('pricePlanComparisons');",
+                  "pm.expect(json.pricePlanComparisons).to.be.an('object');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recommend Cheapest Price Plans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/price-plans/recommend/{{smartMeterId}}?limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "price-plans",
+                "recommend",
+                "{{smartMeterId}}"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            },
+            "description": "Return the cheapest price plans for the meter usage."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.response.to.have.status(200);",
+                  "const json = pm.response.json();",
+                  "pm.expect(json).to.be.an('array');",
+                  "pm.expect(json.length).to.eql(Number(pm.environment.get('limit')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

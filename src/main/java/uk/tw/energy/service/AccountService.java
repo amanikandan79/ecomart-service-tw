@@ -16,4 +16,8 @@ public class AccountService {
     public String getPricePlanIdForSmartMeterId(String smartMeterId) {
         return smartMeterToPricePlanAccounts.get(smartMeterId);
     }
+
+    public boolean isKnownSmartMeterId(String smartMeterId) {
+        return smartMeterToPricePlanAccounts.containsKey(smartMeterId);
+    }
 }

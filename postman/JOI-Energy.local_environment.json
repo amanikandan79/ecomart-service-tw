@@ -1,0 +1,24 @@
+{
+  "id": "7d3b98af-6a8c-4d76-a0f0-6b6b43d0f001",
+  "name": "JOI Energy Local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "enabled": true
+    },
+    {
+      "key": "smartMeterId",
+      "value": "smart-meter-0",
+      "enabled": true
+    },
+    {
+      "key": "limit",
+      "value": "2",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-06-10T11:52:06.200+08:00",
+  "_postman_exported_using": "Copilot CLI"
+}

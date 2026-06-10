@@ -1,0 +1,17 @@
+uk\tw\energy\domain\MeterReadings.class
+uk\tw\energy\exception\ErrorResponse.class
+uk\tw\energy\App.class
+uk\tw\energy\service\MeterReadingService.class
+uk\tw\energy\service\PricePlanService.class
+uk\tw\energy\domain\ElectricityReading.class
+uk\tw\energy\exception\GlobalExceptionHandler.class
+uk\tw\energy\service\AccountService.class
+uk\tw\energy\controller\PricePlanComparatorController.class
+uk\tw\energy\SeedingApplicationDataConfiguration.class
+uk\tw\energy\domain\PricePlan.class
+uk\tw\energy\exception\InvalidMeterReadingException.class
+uk\tw\energy\exception\PricePlanNotFoundException.class
+uk\tw\energy\controller\MeterReadingController.class
+uk\tw\energy\domain\PricePlan$PeakTimeMultiplier.class
+uk\tw\energy\generator\ElectricityReadingsGenerator.class
+uk\tw\energy\exception\MeterNotFoundException.class

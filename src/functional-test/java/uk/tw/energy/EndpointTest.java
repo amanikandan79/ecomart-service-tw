@@ -1,7 +1,7 @@
-package uk.tw.energy;
+package java.uk.tw.energy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,13 +11,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import uk.tw.energy.App;
 import uk.tw.energy.builders.MeterReadingsBuilder;
 import uk.tw.energy.domain.MeterReadings;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Collections;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = App.class)
 public class EndpointTest {
+
+    private static final String KNOWN_SMART_METER_ID = "smart-meter-0";
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -26,7 +33,10 @@ public class EndpointTest {
 
     @Test
     public void shouldStoreReadings() throws JsonProcessingException {
-        MeterReadings meterReadings = new MeterReadingsBuilder().generateElectricityReadings().build();
+        MeterReadings meterReadings = new MeterReadingsBuilder()
+                .setSmartMeterId(KNOWN_SMART_METER_ID)
+                .generateElectricityReadings()
+                .build();
         HttpEntity<String> entity = getStringHttpEntity(meterReadings);
 
         ResponseEntity<String> response = restTemplate.postForEntity("/readings/store", entity, String.class);
@@ -35,8 +45,31 @@ public class EndpointTest {
     }
 
     @Test
+    public void shouldRejectInvalidReadings() throws JsonProcessingException {
+        MeterReadings meterReadings = new MeterReadings(null, Collections.emptyList());
+        HttpEntity<String> entity = getStringHttpEntity(meterReadings);
+
+        ResponseEntity<String> response = restTemplate.postForEntity("/readings/store", entity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void shouldRejectUnknownMeterReadings() throws JsonProcessingException {
+        MeterReadings meterReadings = new MeterReadingsBuilder()
+                .setSmartMeterId("unknown-meter-id")
+                .generateElectricityReadings()
+                .build();
+        HttpEntity<String> entity = getStringHttpEntity(meterReadings);
+
+        ResponseEntity<String> response = restTemplate.postForEntity("/readings/store", entity, String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     public void givenMeterIdShouldReturnAMeterReadingAssociatedWithMeterId() throws JsonProcessingException {
-        String smartMeterId = "bob";
+        String smartMeterId = KNOWN_SMART_METER_ID;
         populateMeterReadingsForMeter(smartMeterId);
 
         ResponseEntity<String> response = restTemplate.getForEntity("/readings/read/" + smartMeterId, String.class);
@@ -46,7 +79,7 @@ public class EndpointTest {
 
     @Test
     public void shouldCalculateAllPrices() throws JsonProcessingException {
-        String smartMeterId = "bob";
+        String smartMeterId = KNOWN_SMART_METER_ID;
         populateMeterReadingsForMeter(smartMeterId);
 
         ResponseEntity<String> response = restTemplate.getForEntity("/price-plans/compare-all/" + smartMeterId, String.class);
@@ -56,7 +89,7 @@ public class EndpointTest {
 
     @Test
     public void givenMeterIdAndLimitShouldReturnRecommendedCheapestPricePlans() throws JsonProcessingException {
-        String smartMeterId = "bob";
+        String smartMeterId = KNOWN_SMART_METER_ID;
         populateMeterReadingsForMeter(smartMeterId);
 
         ResponseEntity<String> response =
