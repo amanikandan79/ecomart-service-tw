@@ -3,6 +3,7 @@ package uk.tw.energy.domain;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 public class PricePlan {
@@ -16,7 +17,9 @@ public class PricePlan {
         this.planName = planName;
         this.energySupplier = energySupplier;
         this.unitRate = unitRate;
-        this.peakTimeMultipliers = peakTimeMultipliers;
+        this.peakTimeMultipliers = peakTimeMultipliers == null
+                ? Collections.emptyList()
+                : List.copyOf(peakTimeMultipliers);
     }
 
     public String getEnergySupplier() {

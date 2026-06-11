@@ -1,282 +1,50 @@
-# Welcome to PowerDale
+# JOI Energy Service
 
-PowerDale is a small town with around 100 residents. Most houses have a smart meter installed that can save and send
-information about how much power a house is drawing/using.
+Spring Boot 3 REST API for smart-meter readings and price-plan cost comparison.
 
-There are three major providers of energy in town that charge different amounts for the power they supply.
+## Current state (synced: 2026-06-10)
 
-- _Dr Evil's Dark Energy_
-- _The Green Eco_
-- _Power for Everyone_
+- In-memory application (no database).
+- 4 active API endpoints (`/readings/*`, `/price-plans/*`).
+- Standardized error body: `httpStatus`, `code`, `message`, `details`, `timestamp`.
+- Unit tests pass (`26` tests).
+- `functionalTest` currently fails due `src/functional-test/java/uk/tw/energy/EndpointTest.java` package declaration (`package java.uk.tw.energy;`), which triggers `SecurityException: Prohibited package name`.
 
-# Introducing JOI Energy
+## Build, test, run
 
-JOI Energy (formerly EcoMart) is a start-up in the energy industry. Rather than selling energy they want to differentiate themselves from the market by recording their customers' energy usage from their smart meters and recommending the best supplier to meet their needs.
+### Windows
 
-You have been placed in a small support team along with their development team, whose current goal is to produce an API which their customers and smart meters will interact with.
-
-Unfortunately, two members of the support team are on annual leave, and another one has called in sick! You are left with another ThoughtWorker to support the application and provide value to the client by having minimum/no disruptions in the application
-
-## Problem Statement
-
-The immediate challenge is to increase the stability of the application by maintaining and improving the code base while in parallel the development of the API for customer and smart meter interaction is ongoing
-## Users
-
-To trial the new JOI software 5 people from the JOI accounts team have agreed to test the service and share their energy
-data.
-
-| User    | Smart Meter ID  | Power Supplier        |
-| ------- | --------------- | --------------------- |
-| Sarah   | `smart-meter-0` | Dr Evil's Dark Energy |
-| Peter   | `smart-meter-1` | The Green Eco         |
-| Charlie | `smart-meter-2` | Dr Evil's Dark Energy |
-| Andrea  | `smart-meter-3` | Power for Everyone    |
-| Alex    | `smart-meter-4` | The Green Eco         |
-
-These values are used in the code and in the following examples too.
-
-## Requirements
-
-The project requires [Java 18](https://adoptium.net/en-GB/temurin/releases/?version=18) or
-higher.
-
-The project makes use of Gradle and uses
-the [Gradle wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html), which means you don't need Gradle
-installed.
-
-## Useful Gradle commands
-
-The project makes use of Gradle and uses the Gradle wrapper to help you out carrying some common tasks such as building
-the project or running it.
-
-### List all Gradle tasks
-
-List all the tasks that Gradle can do, such as `build` and `test`.
-
-```console
-$ ./gradlew tasks
+```powershell
+.\gradlew.bat clean build
+.\gradlew.bat test
+.\gradlew.bat functionalTest
+.\gradlew.bat bootRun
 ```
 
-### Build the project
+### macOS/Linux
 
-Compiles the project, runs the test and then creates an executable JAR file
-
-```console
-$ ./gradlew build
+```bash
+./gradlew clean build
+./gradlew test
+./gradlew functionalTest
+./gradlew bootRun
 ```
 
-Run the application using Java and the executable JAR file produced by the Gradle `build` task. The application will be
-listening to port `8080`.
+Java toolchain is set to **Java 18** in `build.gradle.kts`.
 
-```console
-$ java -jar build/libs/developer-joyofenergy-java.jar
-```
+## Key components
 
-### Run the tests
+- `uk.tw.energy.App` - Spring Boot entry point
+- `uk.tw.energy.SeedingApplicationDataConfiguration` - seeded in-memory beans
+- `controller` - HTTP APIs
+- `service` - business logic (`MeterReadingService`, `PricePlanService`, `AccountService`)
+- `exception` - centralized error handling (`GlobalExceptionHandler`)
 
-There are two types of tests, the unit tests and the functional tests. These can be executed as follows.
+## API overview
 
-- Run unit tests only
+1. `POST /readings/store`
+2. `GET /readings/read/{smartMeterId}`
+3. `GET /price-plans/compare-all/{smartMeterId}`
+4. `GET /price-plans/recommend/{smartMeterId}?limit={n}`
 
-  ```console
-  $ ./gradlew test
-  ```
-
-- Run functional tests only
-
-  ```console
-  $ ./gradlew functionalTest
-  ```
-
-- Run both unit and functional tests
-
-  ```console
-  $ ./gradlew check
-  ```
-
-### Run the application
-
-Run the application which will be listening on port `8080`.
-
-```console
-$ ./gradlew bootRun
-```
-
-## API
-
-Below is a list of API endpoints with their respective input and output. Please note that the application needs to be
-running for the following endpoints to work. For more information about how to run the application, please refer
-to [run the application](#run-the-application) section above.
-
-### Store Readings
-
-Endpoint
-
-```text
-POST /readings/store
-```
-
-Example of body
-
-```json
-{
-  "smartMeterId": <smartMeterId>,
-  "electricityReadings": [
-    {
-      "time": <time>,
-      "reading": <reading>
-    }
-  ]
-}
-```
-
-Parameters
-
-| Parameter      | Description                                           |
-| -------------- | ----------------------------------------------------- |
-| `smartMeterId` | One of the smart meters' id listed above              |
-| `time`         | The date/time (as epoch) when the _reading_ was taken |
-| `reading`      | The consumption in `kW` at the _time_ of the reading  |
-
-Example readings
-
-| Date (`GMT`)      | Epoch timestamp | Reading (`kW`) |
-| ----------------- | --------------: | -------------: |
-| `2020-11-29 8:00` |      1606636800 |         0.0503 |
-| `2020-11-29 8:01` |      1606636860 |         0.0621 |
-| `2020-11-29 8:02` |      1606636920 |         0.0222 |
-| `2020-11-29 8:03` |      1606636980 |         0.0423 |
-| `2020-11-29 8:04` |      1606637040 |         0.0191 |
-
-In the above example, the smart meter sampled readings, in `kW`, every minute. Note that the reading is in `kW` and
-not `kWH`, which means that each reading represents the consumption at the reading time. If no power is being consumed
-at the time of reading, then the reading value will be `0`. Given that `0` may introduce new challenges, we can assume
-that there is always some consumption, and we will never have a `0` reading value. These readings are then sent by the
-smart meter to the application using REST. There is a service in the application that calculates the `kWH` from these
-readings.
-
-The following POST request, is an example request using CURL, sends the readings shown in the table above.
-
-```console
-$ curl \
-  -X POST \
-  -H "Content-Type: application/json" \
-  "http://localhost:8080/readings/store" \
-  -d '{"smartMeterId":"smart-meter-0","electricityReadings":[{"time":1606636800,"reading":0.0503},{"time":1606636860,"reading":0.0621},{"time":1606636920,"reading":0.0222},{"time":1606636980,"reading":0.0423},{"time":1606637040,"reading":0.0191}]}'
-```
-
-The above command does not return anything.
-
-### Get Stored Readings
-
-Endpoint
-
-```text
-GET /readings/read/<smartMeterId>
-```
-
-Parameters
-
-| Parameter      | Description                              |
-| -------------- | ---------------------------------------- |
-| `smartMeterId` | One of the smart meters' id listed above |
-
-Retrieving readings using CURL
-
-```console
-$ curl "http://localhost:8080/readings/read/smart-meter-0"
-```
-
-Example output
-
-```json
-[
-  {
-    "time": "2020-11-29T08:00:00Z",
-    "reading": 0.0503
-  },
-  {
-    "time": "2020-11-29T08:01:00Z",
-    "reading": 0.0621
-  },
-  {
-    "time": "2020-11-29T08:02:00Z",
-    "reading": 0.0222
-  },
-  {
-    "time": "2020-11-29T08:03:00Z",
-    "reading": 0.0423
-  },
-  {
-    "time": "2020-11-29T08:04:00Z",
-    "reading": 0.0191
-  }
-]
-```
-
-### View Current Price Plan and Compare Usage Cost Against all Price Plans
-
-Endpoint
-
-```text
-GET /price-plans/compare-all/<smartMeterId>
-```
-
-Parameters
-
-| Parameter      | Description                              |
-| -------------- | ---------------------------------------- |
-| `smartMeterId` | One of the smart meters' id listed above |
-
-Retrieving readings using CURL
-
-```console
-$ curl "http://localhost:8080/price-plans/compare-all/smart-meter-0"
-```
-
-Example output
-
-```json
-{
-  "pricePlanComparisons": {
-    "price-plan-2": 0.0002,
-    "price-plan-1": 0.0004,
-    "price-plan-0": 0.002
-  },
-  "pricePlanId": "price-plan-0"
-}
-```
-
-### View Recommended Price Plans for Usage
-
-Endpoint
-
-```text
-GET /price-plans/recommend/<smartMeterId>[?limit=<limit>]
-```
-
-Parameters
-
-| Parameter      | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `smartMeterId` | One of the smart meters' id listed above             |
-| `limit`        | (Optional) limit the number of plans to be displayed |
-
-Retrieving readings using CURL
-
-```console
-$ curl "http://localhost:8080/price-plans/recommend/smart-meter-0?limit=2"
-```
-
-Example output
-
-```json
-[
-  {
-    "price-plan-2": 0.0002
-  },
-  {
-    "price-plan-1": 0.0004
-  }
-]
-```
+See `API_REFERENCE.md` for request/response details and `ARCHITECTURE.md` for flow/design.
