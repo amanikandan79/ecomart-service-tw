@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DEPLOY_COMPOSE_FILE = 'deploy-compose.yml'
+        DEPLOY_COMPOSE_FILE = 'docker-compose.yml'
         APP_HEALTH_URL = 'http://localhost:8081/actuator/health'
     }
 
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/${env.BRANCH_NAME ?: 'main'}"]],
+                    branches: [[name: "*/feature/my-changes"]],
                     userRemoteConfigs: [[
                         name: 'origin',
                         url: 'https://github.com/amanikandan79/ecomart-service-tw'
