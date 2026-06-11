@@ -17,7 +17,21 @@ pipeline {
                 deleteDir()
             }
         }
-        stage('Debug SCM') {
+    
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${env.BRANCH_NAME ?: 'main'}"]],
+                    userRemoteConfigs: [[
+                        name: 'origin',
+                        url: 'https://github.com/amanikandan79/ecomart-service-tw'
+                    ]]
+                ])
+            }
+        }
+
+    stage('Debug SCM') {
             steps {
                 sh '''
                     pwd
@@ -40,19 +54,6 @@ pipeline {
                 '''
             }
     }
-        stage('Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.BRANCH_NAME ?: 'main'}"]],
-                    userRemoteConfigs: [[
-                        name: 'origin',
-                        url: 'https://github.com/amanikandan79/ecomart-service-tw'
-                    ]]
-                ])
-            }
-        }
-
         stage('Build') {
             steps {
                 sh './gradlew clean assemble --no-daemon'
