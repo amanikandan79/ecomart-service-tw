@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DEPLOY_COMPOSE_FILE = 'deploy-compose.yml'
+        DEPLOY_COMPOSE_FILE = 'docker-compose.yml'
         APP_HEALTH_URL = 'http://localhost:8081/actuator/health'
     }
 
