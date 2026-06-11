@@ -9,11 +9,12 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
 }
 
-//java {
-//    toolchain {
-//        languageVersion.set(JavaLanguageVersion.of(21))
- //   }
-//}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+        println("java 21")
+    }
+}
 
 repositories {
     mavenCentral()
