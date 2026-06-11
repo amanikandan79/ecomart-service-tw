@@ -22,7 +22,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/${env.BRANCH_NAME ?: 'main'}"]],
+                    branches: [[name: "*/feature/my-changes"]],
                     userRemoteConfigs: [[
                         name: 'origin',
                         url: 'https://github.com/amanikandan79/ecomart-service-tw'
