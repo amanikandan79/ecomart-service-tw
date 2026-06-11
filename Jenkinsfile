@@ -12,7 +12,23 @@ pipeline {
     }
 
     stages {
-
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+        stage('Debug SCM') {
+            steps {
+                sh '''
+                    pwd
+                    git branch
+                    git log --oneline -5
+                    git remote -v
+                    ls -la
+                '''
+            }
+        }
+        
         stage('Environment Check') {
             steps {
                 sh '''
