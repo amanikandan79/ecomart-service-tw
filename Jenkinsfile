@@ -12,6 +12,18 @@ pipeline {
     }
 
     stages {
+
+        stage('Environment Check') {
+            steps {
+                sh '''
+                    whoami
+                    pwd
+                    java -version
+                    echo JAVA_HOME=$JAVA_HOME
+                    ./gradlew --version
+                '''
+            }
+    }
         stage('Checkout') {
             steps {
                 checkout([
