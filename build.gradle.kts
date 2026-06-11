@@ -10,10 +10,10 @@ plugins {
 }
 
 java {
-    toolchain {
+  /*  toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
         println("java 21")
-    }
+    } */
 }
 
 repositories {
